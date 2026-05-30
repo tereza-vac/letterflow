@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3b82f6"/>
+      <stop offset="1" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="220" fill="url(#g)"/>
+  <!-- paper-plane / envelope flow mark -->
+  <path d="M250 360 L774 360 L512 596 Z" fill="#ffffff" opacity="0.95"/>
+  <path d="M250 400 L250 690 L470 560 Z" fill="#ffffff" opacity="0.7"/>
+  <path d="M774 400 L774 690 L554 560 Z" fill="#ffffff" opacity="0.7"/>
+  <path d="M250 700 L512 540 L774 700 L774 720 L250 720 Z" fill="#ffffff" opacity="0.85"/>
+</svg>
