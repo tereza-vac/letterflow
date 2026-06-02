@@ -131,6 +131,12 @@ The bundled installers are written to
 `src-tauri/target/release/bundle/` (NSIS `.exe` and MSI on Windows). macOS
 (`.dmg`) and Linux (`.deb`/AppImage) targets are configured for later.
 
+This build is verified on Windows (Rust 1.96, MSVC toolchain) and produces:
+
+- `src-tauri/target/release/letterflow.exe` (standalone)
+- `src-tauri/target/release/bundle/nsis/letterflow_0.1.0_x64-setup.exe`
+- `src-tauri/target/release/bundle/msi/letterflow_0.1.0_x64_en-US.msi`
+
 ---
 
 ## Setting up the AI API key

@@ -69,7 +69,19 @@ pub async fn smtp_test(config: SmtpConfig) -> Result<(), String> {
 
 #[tauri::command]
 pub async fn smtp_send(config: SmtpConfig, email: OutgoingEmail) -> Result<(), String> {
-    let from: Mailbox = format!("{} <{}>", email.from_name, email.from_email)
+    // Prefer the campaign's from fields; fall back to the configured SMTP
+    // sender identity when they are not supplied.
+    let from_name = if email.from_name.is_empty() {
+        config.sender_name.clone()
+    } else {
+        email.from_name.clone()
+    };
+    let from_email = if email.from_email.is_empty() {
+        config.sender_email.clone()
+    } else {
+        email.from_email.clone()
+    };
+    let from: Mailbox = format!("{from_name} <{from_email}>")
         .parse()
         .map_err(|_| "Invalid sender address".to_string())?;
     let to: Mailbox = email

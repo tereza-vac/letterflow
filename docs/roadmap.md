@@ -17,8 +17,9 @@ diverse contacts, send one safe test email, and export everything.
 - **M4 — Preview & safety** ✅ Preview, missing-variable analysis, smart preview
   sampling, risk score.
 - **M5 — Send & export** ✅ SMTP test send, test-send logs, export package.
-- **M6 — Packaging & docs** 🟡 Windows `.exe` packaging, documentation, security
-  review. *(Requires Rust toolchain to produce binaries.)*
+- **M6 — Packaging & docs** ✅ Windows `.exe` packaging verified (standalone
+  `letterflow.exe`, NSIS setup, and MSI installer produced via `tauri build`),
+  documentation, security review.
 
 ## Next
 
