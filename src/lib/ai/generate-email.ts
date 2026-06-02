@@ -4,6 +4,9 @@ import {
   type AiProvider,
   type AiProviderConfig,
   type GeneratedEmail,
+  type EmailDraft,
+  type RefineOptions,
+  type RewriteOptions,
 } from "@/lib/ai/types";
 import { openAiProvider } from "@/lib/ai/providers/openai";
 
@@ -88,6 +91,18 @@ export async function generateEmail(args: {
 }): Promise<GeneratedEmail> {
   const provider = getAiProvider(args.config.provider);
   return provider.generateEmail(args);
+}
+
+/** Refine an existing draft per the user's instructions. */
+export async function refineEmail(args: RefineOptions): Promise<EmailDraft> {
+  const provider = getAiProvider(args.config.provider);
+  return provider.refineEmail(args);
+}
+
+/** Rewrite just a selected snippet; returns the replacement text. */
+export async function rewriteSelection(args: RewriteOptions): Promise<string> {
+  const provider = getAiProvider(args.config.provider);
+  return provider.rewriteSelection(args);
 }
 
 export const DEFAULT_AI_CONFIG: AiProviderConfig = {

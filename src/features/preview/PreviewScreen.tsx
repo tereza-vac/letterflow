@@ -11,9 +11,16 @@ import { buildPreviewSamples } from "@/lib/preview/sample";
 import { renderTemplate } from "@/lib/templates/render-template";
 
 export function PreviewScreen() {
-  const { campaign, contacts } = useAppStore();
+  const { campaign, contacts, smtpConfig } = useAppStore();
   const samples = useMemo(() => buildPreviewSamples(contacts), [contacts]);
   const [activeId, setActiveId] = useState<string | null>(null);
+
+  const fromEmailForUnsub = campaign.fromEmail || smtpConfig.senderEmail || "";
+  const systemVars = {
+    unsubscribe_url: fromEmailForUnsub
+      ? `mailto:${fromEmailForUnsub}?subject=Unsubscribe`
+      : "https://example.com/unsubscribe",
+  };
 
   const active = samples.find((s) => s.contact.id === activeId) ?? samples[0];
 
@@ -30,9 +37,9 @@ export function PreviewScreen() {
     );
   }
 
-  const subject = renderTemplate(campaign.subject, active.contact);
-  const plain = renderTemplate(campaign.plainTextBody, active.contact);
-  const html = renderTemplate(campaign.htmlBody, active.contact);
+  const subject = renderTemplate(campaign.subject, active.contact, systemVars);
+  const plain = renderTemplate(campaign.plainTextBody, active.contact, systemVars);
+  const html = renderTemplate(campaign.htmlBody, active.contact, systemVars);
   const allUnresolved = [...new Set([...subject.unresolved, ...plain.unresolved, ...html.unresolved])];
   const allFallback = [...new Set([...subject.usedFallback, ...plain.usedFallback, ...html.usedFallback])];
 
@@ -83,7 +90,7 @@ export function PreviewScreen() {
               </CardTitle>
               {campaign.previewText && (
                 <div className="text-xs text-muted-foreground">
-                  Preview: {renderTemplate(campaign.previewText, active.contact).output}
+                  Preview: {renderTemplate(campaign.previewText, active.contact, systemVars).output}
                 </div>
               )}
             </CardHeader>

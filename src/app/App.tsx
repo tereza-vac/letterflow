@@ -14,6 +14,7 @@ import { EditScreen } from "@/features/campaign/EditScreen";
 import { PreviewScreen } from "@/features/preview/PreviewScreen";
 import { TestSendScreen } from "@/features/test-send/TestSendScreen";
 import { ExportScreen } from "@/features/export/ExportScreen";
+import { BulkSendScreen } from "@/features/bulk-send/BulkSendScreen";
 
 const SCREENS: Record<Step, FC> = {
   welcome: WelcomeScreen,
@@ -27,6 +28,7 @@ const SCREENS: Record<Step, FC> = {
   preview: PreviewScreen,
   test: TestSendScreen,
   export: ExportScreen,
+  bulk: BulkSendScreen,
 };
 
 export function App() {

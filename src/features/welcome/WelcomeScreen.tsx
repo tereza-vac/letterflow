@@ -5,11 +5,13 @@ import {
   FileSpreadsheet,
   Sparkles,
   Send,
+  FlaskConical,
 } from "lucide-react";
 import { useAppStore } from "@/app/store";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { loadTestData } from "@/lib/dev/seed";
 
 export function WelcomeScreen() {
   const online = useAppStore((s) => s.online);
@@ -71,13 +73,23 @@ export function WelcomeScreen() {
         />
       </div>
 
-      <div className="mt-8 flex gap-3">
+      <div className="mt-8 flex flex-wrap gap-3">
         <Button size="lg" onClick={() => setStep("settings")}>
           Get started
         </Button>
         <Button size="lg" variant="outline" onClick={() => setStep("upload")}>
           Skip to uploading files
         </Button>
+        {import.meta.env.DEV && (
+          <Button
+            size="lg"
+            variant="ghost"
+            className="ml-auto gap-1.5 text-muted-foreground"
+            onClick={loadTestData}
+          >
+            <FlaskConical className="h-4 w-4" /> Load test data (dev)
+          </Button>
+        )}
       </div>
     </div>
   );

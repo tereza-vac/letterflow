@@ -40,8 +40,18 @@ export function parseTemplate(template: string): TemplateToken[] {
   return tokens;
 }
 
+/**
+ * Variables provided by the system (not by contact data). They are injected at
+ * send/export time — e.g. `unsubscribe_url`, which a downstream email platform
+ * fills per recipient. They always count as "resolvable".
+ */
+export const SYSTEM_VARIABLES = ["unsubscribe_url"] as const;
+
 /** Build the variable resolution context for a contact. */
-export function contactContext(contact: Contact): Record<string, unknown> {
+export function contactContext(
+  contact: Contact,
+  system?: Record<string, string>,
+): Record<string, unknown> {
   return {
     email: contact.email,
     firstName: contact.firstName ?? "",
@@ -50,6 +60,7 @@ export function contactContext(contact: Contact): Record<string, unknown> {
       contact.fullName ??
       [contact.firstName, contact.lastName].filter(Boolean).join(" "),
     custom: contact.customFields,
+    ...(system ?? {}),
   };
 }
 
@@ -83,8 +94,9 @@ export interface RenderResult {
 export function renderTemplate(
   template: string,
   contact: Contact,
+  system?: Record<string, string>,
 ): RenderResult {
-  const context = contactContext(contact);
+  const context = contactContext(contact, system);
   const tokens = parseTemplate(template);
   const unresolved: string[] = [];
   const usedFallback: string[] = [];

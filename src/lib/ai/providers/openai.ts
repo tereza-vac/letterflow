@@ -1,11 +1,21 @@
 import {
+  EmailDraft,
   GeneratedEmail,
   type AiProvider,
   type AiProviderConfig,
   type GenerateOptions,
+  type RefineOptions,
+  type RewriteOptions,
 } from "@/lib/ai/types";
-import { SYSTEM_PROMPT, buildUserPrompt } from "@/lib/ai/prompt";
-import { providerFetch } from "@/lib/ai/http";
+import {
+  SYSTEM_PROMPT,
+  REFINE_SYSTEM_PROMPT,
+  REWRITE_SYSTEM_PROMPT,
+  buildUserPrompt,
+  buildRefinePrompt,
+  buildRewritePrompt,
+} from "@/lib/ai/prompt";
+import { aiProviderPost, isGeminiEndpoint } from "@/lib/ai/http";
 
 /** Strip accidental ```json fences so JSON.parse won't choke. */
 function extractJson(text: string): string {
@@ -27,24 +37,33 @@ async function chat(
   apiKey: string,
   messages: Array<{ role: string; content: string }>,
   signal?: AbortSignal,
+  options: { json?: boolean; temperature?: number } = { json: true, temperature: 0.7 },
 ): Promise<string> {
   const url = `${config.baseUrl.replace(/\/$/, "")}/chat/completions`;
-  const res = await providerFetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: config.model,
-      messages,
-      temperature: 0.7,
-      response_format: { type: "json_object" },
-    }),
-    signal,
-  });
+  const useJsonMode = options.json !== false && !isGeminiEndpoint(config.baseUrl);
+  const payload: Record<string, unknown> = {
+    model: config.model,
+    messages,
+    temperature: options.temperature ?? 0.7,
+    ...(useJsonMode ? { response_format: { type: "json_object" } } : {}),
+  };
 
-  const data = (await res.json()) as ChatResponse;
+  let res: Response;
+  try {
+    res = await aiProviderPost(url, payload, apiKey);
+  } catch (err) {
+    throw new Error(err instanceof Error ? err.message : String(err));
+  }
+
+  if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
+
+  let data: ChatResponse;
+  try {
+    data = (await res.json()) as ChatResponse;
+  } catch {
+    throw new Error(`AI returned a non-JSON response (${res.status}). Check Settings → Base URL.`);
+  }
+
   if (!res.ok) {
     throw new Error(data.error?.message || `AI request failed (${res.status})`);
   }
@@ -71,6 +90,7 @@ export const openAiProvider: AiProvider = {
         { role: "user", content: buildUserPrompt(payload) },
       ],
       signal,
+      { temperature: 0.3 },
     );
 
     let parsed: unknown;
@@ -86,6 +106,45 @@ export const openAiProvider: AiProvider = {
       );
     }
     return result.data;
+  },
+
+  async refineEmail(options: RefineOptions): Promise<EmailDraft> {
+    const { config, apiKey, signal } = options;
+    const content = await chat(
+      config,
+      apiKey,
+      [
+        { role: "system", content: REFINE_SYSTEM_PROMPT },
+        { role: "user", content: buildRefinePrompt(options) },
+      ],
+      signal,
+    );
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(extractJson(content));
+    } catch {
+      throw new Error("AI returned text that was not valid JSON. Try again.");
+    }
+    const result = EmailDraft.safeParse(parsed);
+    if (!result.success) {
+      throw new Error("AI response did not match the expected structure. Try again.");
+    }
+    return result.data;
+  },
+
+  async rewriteSelection(options: RewriteOptions): Promise<string> {
+    const { config, apiKey, signal } = options;
+    const content = await chat(
+      config,
+      apiKey,
+      [
+        { role: "system", content: REWRITE_SYSTEM_PROMPT },
+        { role: "user", content: buildRewritePrompt(options) },
+      ],
+      signal,
+      { json: false },
+    );
+    return content.trim();
   },
 
   async testConnection(config: AiProviderConfig, apiKey: string): Promise<void> {

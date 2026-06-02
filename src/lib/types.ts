@@ -215,3 +215,33 @@ export interface TestSendLog {
   status: "success" | "error";
   error?: string;
 }
+
+// ---------------------------------------------------------------------------
+// Bulk send (guarded, opt-in developer feature)
+// ---------------------------------------------------------------------------
+
+export interface BulkRecipientResult {
+  email: string;
+  status: "sent" | "failed";
+  error?: string;
+}
+
+/** Summary of one bulk-send run, persisted so re-runs can skip already-sent. */
+export interface BulkSendLog {
+  id: string;
+  campaignId: string;
+  startedAt: string;
+  finishedAt: string;
+  /** A dry run renders every message but sends nothing. */
+  dryRun: boolean;
+  /** Number of eligible recipients the run attempted. */
+  total: number;
+  sent: number;
+  failed: number;
+  /** Recipients skipped before the run (suppressed / invalid / already sent). */
+  skipped: number;
+  /** Delay between individual sends, in milliseconds. */
+  delayMs: number;
+  /** Per-recipient outcome for attempted (non-skipped) sends. */
+  results: BulkRecipientResult[];
+}

@@ -15,6 +15,7 @@ import {
   Home,
   ListChecks,
   FileText,
+  Megaphone,
 } from "lucide-react";
 
 const STEP_META: Record<Step, { label: string; icon: typeof Home; n?: number }> = {
@@ -29,6 +30,7 @@ const STEP_META: Record<Step, { label: string; icon: typeof Home; n?: number }> 
   preview: { label: "Preview", icon: Eye, n: 8 },
   test: { label: "Test send", icon: Send, n: 9 },
   export: { label: "Export", icon: Download, n: 10 },
+  bulk: { label: "Bulk send", icon: Megaphone },
 };
 
 export function Sidebar() {
@@ -36,6 +38,7 @@ export function Sidebar() {
   const setStep = useAppStore((s) => s.setStep);
   const online = useAppStore((s) => s.online);
   const contacts = useAppStore((s) => s.contacts);
+  const developerBulkEnabled = useAppStore((s) => s.developerBulkEnabled);
 
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col border-r bg-card/40">
@@ -82,6 +85,22 @@ export function Sidebar() {
             </button>
           );
         })}
+
+        {developerBulkEnabled && (
+          <button
+            onClick={() => setStep("bulk")}
+            className={cn(
+              "mt-1 flex w-full items-center gap-3 rounded-md border border-dashed px-3 py-2 text-sm transition-colors",
+              step === "bulk"
+                ? "bg-primary/15 font-medium text-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground",
+            )}
+          >
+            <STEP_META.bulk.icon className="h-4 w-4 shrink-0" />
+            <span className="flex-1 text-left">{STEP_META.bulk.label}</span>
+            <Badge variant="secondary" className="text-[9px]">dev</Badge>
+          </button>
+        )}
       </nav>
 
       <div className="space-y-2 border-t p-3">

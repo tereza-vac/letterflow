@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { FileText, ShieldCheck, Eye } from "lucide-react";
+import { FileText, ShieldCheck, Eye, Link2, Plus, X } from "lucide-react";
 import { useAppStore } from "@/app/store";
 import { StepHeader, StepFooter } from "@/components/layout/StepShell";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { collectFieldNames, collectContextText } from "@/features/campaign/derive";
@@ -21,9 +22,22 @@ export function BriefScreen() {
   const contacts = useAppStore((s) => s.contacts);
   const aiIncludeSamples = useAppStore((s) => s.aiIncludeSamples);
   const setAiIncludeSamples = useAppStore((s) => s.setAiIncludeSamples);
+  const sourceUrls = useAppStore((s) => s.sourceUrls);
+  const setSourceUrls = useAppStore((s) => s.setSourceUrls);
 
   const fieldNames = useMemo(() => collectFieldNames(contacts), [contacts]);
   const contextText = useMemo(() => collectContextText(files), [files]);
+  const hasUrls = sourceUrls.some((u) => u.trim());
+
+  function updateUrl(index: number, value: string) {
+    setSourceUrls(sourceUrls.map((u, i) => (i === index ? value : u)));
+  }
+  function addUrl() {
+    setSourceUrls([...sourceUrls, ""]);
+  }
+  function removeUrl(index: number) {
+    setSourceUrls(sourceUrls.filter((_, i) => i !== index));
+  }
 
   return (
     <div>
@@ -55,6 +69,40 @@ export function BriefScreen() {
             </button>
           </div>
 
+          <div className="space-y-1.5">
+            <Label className="flex items-center gap-1.5">
+              <Link2 className="h-3.5 w-3.5" /> Source links
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              Paste links to a page with the details (event date, location, prices…).
+              URLs in your brief are picked up automatically. The app fetches each page
+              and lets the AI read structured data from it when generating.
+            </p>
+            <div className="space-y-2">
+              {sourceUrls.map((url, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <Input
+                    value={url}
+                    onChange={(e) => updateUrl(i, e.target.value)}
+                    placeholder="https://example.com/event"
+                    type="url"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeUrl(i)}
+                    aria-label="Remove link"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button variant="outline" size="sm" onClick={addUrl} className="gap-1.5">
+                <Plus className="h-3.5 w-3.5" /> Add link
+              </Button>
+            </div>
+          </div>
+
           {contextText && (
             <Card>
               <CardHeader>
@@ -82,6 +130,11 @@ export function BriefScreen() {
             <CardContent className="space-y-3 text-sm">
               <SentRow label="Campaign brief" included />
               <SentRow label="Context text from files" included={!!contextText} />
+              <SentRow
+                label="Fetched page content"
+                included={hasUrls}
+                detail={hasUrls ? "from your source links" : "no links added"}
+              />
               <SentRow label="Field names (no values)" included detail={fieldNames.join(", ") || "none"} />
               <SentRow
                 label="Full contact list"

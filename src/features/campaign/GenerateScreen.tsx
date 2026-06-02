@@ -18,32 +18,84 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getSecureStore, SECRET_KEYS } from "@/lib/ai/secure-store";
 import { buildAiPayload, generateEmail } from "@/lib/ai/generate-email";
 import { collectFieldNames, collectContextText } from "@/features/campaign/derive";
+import { fetchPages, pagesToContext, collectSourceUrls } from "@/lib/ai/fetch-url";
+import { MissingInfo } from "@/features/campaign/MissingInfo";
 import type { GeneratedEmail } from "@/lib/ai/types";
+import { isTauri } from "@/lib/runtime";
+
+/** Merge an AI draft into the campaign so later steps (Edit/Preview) have content. */
+export function writeGeneratedToCampaign(
+  result: GeneratedEmail,
+  subject: string,
+  updateCampaign: (patch: Partial<import("@/lib/types").Campaign>) => void,
+) {
+  const plain = `${result.plainTextBody}\n\n${result.footer}`.trim();
+  updateCampaign({
+    subject,
+    previewText: result.previewText,
+    plainTextBody: plain,
+    htmlBody: result.htmlBody.includes(result.footer)
+      ? result.htmlBody
+      : `${result.htmlBody}\n<hr/>\n<p style="font-size:12px;color:#888">${result.footer}</p>`,
+    status: "ready",
+  });
+}
 
 export function GenerateScreen() {
-  const { campaign, updateCampaign, files, contacts, aiConfig, aiKeySaved, aiIncludeSamples, online, setStep } =
-    useAppStore();
+  const {
+    campaign,
+    updateCampaign,
+    files,
+    contacts,
+    aiConfig,
+    aiKeySaved,
+    aiIncludeSamples,
+    online,
+    setStep,
+    sourceUrls,
+    generated,
+    setGenerated,
+  } = useAppStore();
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<GeneratedEmail | null>(null);
+  const [fetchErrors, setFetchErrors] = useState<string[]>([]);
+  const [fetchedPreview, setFetchedPreview] = useState<string | null>(null);
 
   async function generate() {
     setStatus("loading");
     setError(null);
+    setFetchErrors([]);
     try {
       const apiKey = await getSecureStore().get(SECRET_KEYS.aiApiKey);
       if (!apiKey) throw new Error("No AI API key saved. Add one in Settings.");
 
+      let webContext = "";
+      const urls = collectSourceUrls(sourceUrls, campaign.brief);
+      if (urls.length > 0) {
+        const pages = await fetchPages(urls);
+        webContext = pagesToContext(pages);
+        setFetchedPreview(webContext.slice(0, 1200) + (webContext.length > 1200 ? "…" : ""));
+        setFetchErrors(
+          pages.filter((p) => !p.ok).map((p) => `${p.url} — ${p.error ?? "failed"}`),
+        );
+      } else {
+        setFetchedPreview(null);
+      }
+      const contextText = [collectContextText(files), webContext]
+        .filter(Boolean)
+        .join("\n\n");
+
       const payload = buildAiPayload({
         brief: campaign.brief,
-        contextText: collectContextText(files),
+        contextText,
         fieldNames: collectFieldNames(contacts),
         contacts,
         includeAnonymizedSamples: aiIncludeSamples,
       });
 
-      const generated = await generateEmail({ config: aiConfig, apiKey, payload });
-      setResult(generated);
+      const result = await generateEmail({ config: aiConfig, apiKey, payload });
+      setGenerated(result);
+      writeGeneratedToCampaign(result, result.recommendedSubject, updateCampaign);
       setStatus("done");
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -52,20 +104,12 @@ export function GenerateScreen() {
   }
 
   function applyToCampaign(subject: string) {
-    if (!result) return;
-    const plain = `${result.plainTextBody}\n\n${result.footer}`.trim();
-    updateCampaign({
-      subject,
-      previewText: result.previewText,
-      plainTextBody: plain,
-      htmlBody: result.htmlBody.includes(result.footer)
-        ? result.htmlBody
-        : `${result.htmlBody}\n<hr/>\n<p style="font-size:12px;color:#888">${result.footer}</p>`,
-      status: "ready",
-    });
+    if (!generated) return;
+    writeGeneratedToCampaign(generated, subject, updateCampaign);
     setStep("edit");
   }
 
+  const result = generated;
   const blocked = !online || !aiKeySaved;
 
   return (
@@ -75,6 +119,17 @@ export function GenerateScreen() {
         description="The AI drafts subject options, a plain-text and HTML body, a footer, and flags any missing information."
         badge={<Badge variant="outline" className="gap-1"><Sparkles className="h-3 w-3" /> step 6</Badge>}
       />
+
+      {!isTauri() && (
+        <Alert variant="warning" className="mb-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Browser preview — AI generation may fail</AlertTitle>
+          <AlertDescription>
+            Page links can be read here, but calling the AI API is blocked by the browser.
+            Use the desktop app (<span className="font-mono">npm run tauri dev</span>) to generate emails.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {!online && (
         <Alert variant="destructive" className="mb-4">
@@ -115,6 +170,34 @@ export function GenerateScreen() {
         </Alert>
       )}
 
+      {fetchErrors.length > 0 && (
+        <Alert variant="warning" className="mb-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Some links could not be read</AlertTitle>
+          <AlertDescription>
+            <ul className="ml-4 list-disc space-y-0.5">
+              {fetchErrors.map((e, i) => <li key={i}>{e}</li>)}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {fetchedPreview && (
+        <Card className="mb-4">
+          <CardHeader>
+            <CardTitle className="text-sm">Read from your links</CardTitle>
+            <CardDescription>
+              These verified facts were sent to the AI. If dates or location look wrong here, fix the source link before regenerating.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded bg-muted/50 p-3 text-xs scrollbar-thin">
+              {fetchedPreview}
+            </pre>
+          </CardContent>
+        </Card>
+      )}
+
       {result && (
         <div className="space-y-4">
           <Card>
@@ -152,17 +235,7 @@ export function GenerateScreen() {
             </Card>
           </div>
 
-          {result.missingInfoWarnings.length > 0 && (
-            <Alert variant="warning">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Missing information</AlertTitle>
-              <AlertDescription>
-                <ul className="ml-4 list-disc space-y-0.5">
-                  {result.missingInfoWarnings.map((w, i) => <li key={i}>{w}</li>)}
-                </ul>
-              </AlertDescription>
-            </Alert>
-          )}
+          <MissingInfo items={result.missingInfoWarnings} />
 
           <div className="grid gap-4 lg:grid-cols-2">
             {result.toneNotes.length > 0 && (

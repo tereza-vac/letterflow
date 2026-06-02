@@ -52,7 +52,7 @@ const PLACEHOLDER: Contact = {
 };
 
 export function TestSendScreen() {
-  const { campaign, contacts, importResult, smtpConfig, smtpPasswordSaved, online, addTestSendLog, testSendLogs, updateCampaign } =
+  const { campaign, contacts, importResult, smtpConfig, smtpPasswordSaved, online, addTestSendLog, testSendLogs, updateCampaign, developerBulkEnabled, setStep } =
     useAppStore();
   const [testEmail, setTestEmail] = useState(smtpConfig.senderEmail);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -85,7 +85,13 @@ export function TestSendScreen() {
   );
 
   const sample = contacts[0] ?? PLACEHOLDER;
-  const renderedSubject = renderTemplate(campaign.subject, sample).output;
+  const fromEmailForUnsub = campaign.fromEmail || smtpConfig.senderEmail || "";
+  const systemVars = {
+    unsubscribe_url: fromEmailForUnsub
+      ? `mailto:${fromEmailForUnsub}?subject=Unsubscribe`
+      : "https://example.com/unsubscribe",
+  };
+  const renderedSubject = renderTemplate(campaign.subject, sample, systemVars).output;
 
   async function doSend() {
     setSending(true);
@@ -99,8 +105,8 @@ export function TestSendScreen() {
         fromName: campaign.fromName || smtpConfig.senderName,
         fromEmail: campaign.fromEmail || smtpConfig.senderEmail,
         subject: renderedSubject,
-        text: renderTemplate(campaign.plainTextBody, sample).output,
-        html: renderTemplate(campaign.htmlBody, sample).output,
+        text: renderTemplate(campaign.plainTextBody, sample, systemVars).output,
+        html: renderTemplate(campaign.htmlBody, sample, systemVars).output,
       },
     );
     addTestSendLog({
@@ -128,7 +134,7 @@ export function TestSendScreen() {
     <div>
       <StepHeader
         title="Test send"
-        description="Review the safety score, then send a single test email to yourself. Bulk sending is disabled in the MVP."
+        description="Review the safety score, then send a single test email to yourself. Bulk sending stays off unless you enable it in Settings."
         badge={<Badge variant="outline" className="gap-1"><Send className="h-3 w-3" /> step 9</Badge>}
       />
 
@@ -253,6 +259,22 @@ export function TestSendScreen() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {developerBulkEnabled && (
+        <Card className="mt-6 border-dashed">
+          <CardHeader>
+            <CardTitle className="text-base">Bulk send (advanced)</CardTitle>
+            <CardDescription>
+              Experimental bulk sending is enabled. It requires a successful test send and a clear safety score.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button variant="outline" onClick={() => setStep("bulk")}>
+              <Send className="h-4 w-4" /> Open bulk send
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <StepFooter nextLabel="Export" />
     </div>

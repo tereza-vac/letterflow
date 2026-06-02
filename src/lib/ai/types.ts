@@ -14,6 +14,15 @@ export const GeneratedEmail = z.object({
 });
 export type GeneratedEmail = z.infer<typeof GeneratedEmail>;
 
+/** Editable email fields the AI can refine in the Edit step. */
+export const EmailDraft = z.object({
+  subject: z.string(),
+  previewText: z.string(),
+  plainTextBody: z.string(),
+  htmlBody: z.string(),
+});
+export type EmailDraft = z.infer<typeof EmailDraft>;
+
 /** Provider-agnostic configuration. */
 export interface AiProviderConfig {
   /** Provider id, e.g. "openai". */
@@ -41,11 +50,39 @@ export interface GenerateOptions {
   signal?: AbortSignal;
 }
 
+/** Refine an existing draft using free-text instructions. */
+export interface RefineOptions {
+  config: AiProviderConfig;
+  apiKey: string;
+  email: EmailDraft;
+  instructions: string;
+  contextText?: string;
+  fieldNames?: string[];
+  signal?: AbortSignal;
+}
+
+/** Rewrite only a selected snippet of one field. */
+export interface RewriteOptions {
+  config: AiProviderConfig;
+  apiKey: string;
+  /** "subject" | "previewText" | "plainTextBody" | "htmlBody". */
+  field: string;
+  selection: string;
+  instructions: string;
+  /** Full field text so the model has the surrounding context. */
+  surroundingText?: string;
+  signal?: AbortSignal;
+}
+
 /** Common interface implemented by each AI provider. */
 export interface AiProvider {
   id: string;
   label: string;
   generateEmail(options: GenerateOptions): Promise<GeneratedEmail>;
+  /** Refine the whole draft per the user's instructions. */
+  refineEmail(options: RefineOptions): Promise<EmailDraft>;
+  /** Rewrite just the selected text; returns the replacement string. */
+  rewriteSelection(options: RewriteOptions): Promise<string>;
   /** Lightweight reachability/auth check. */
   testConnection(config: AiProviderConfig, apiKey: string): Promise<void>;
 }

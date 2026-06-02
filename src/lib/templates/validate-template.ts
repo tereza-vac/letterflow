@@ -1,7 +1,15 @@
 import type { Contact } from "@/lib/types";
-import { parseTemplate, contactContext } from "@/lib/templates/render-template";
+import {
+  parseTemplate,
+  contactContext,
+  SYSTEM_VARIABLES,
+} from "@/lib/templates/render-template";
 
 export const KNOWN_TOP_LEVEL = ["email", "firstName", "lastName", "fullName"];
+
+function isSystemVariable(path: string): boolean {
+  return (SYSTEM_VARIABLES as readonly string[]).includes(path);
+}
 
 export interface TemplateVariableInfo {
   path: string;
@@ -19,6 +27,7 @@ export interface TemplateValidation {
 }
 
 function resolvesFor(contact: Contact, path: string): boolean {
+  if (isSystemVariable(path)) return true;
   const ctx = contactContext(contact);
   const parts = path.split(".");
   let cur: unknown = ctx;
@@ -55,7 +64,9 @@ export function validateTemplate(
 
   for (const [path, { fallback }] of seen) {
     const known =
-      KNOWN_TOP_LEVEL.includes(path) || path.startsWith("custom.");
+      KNOWN_TOP_LEVEL.includes(path) ||
+      path.startsWith("custom.") ||
+      isSystemVariable(path);
     if (!known) unknownVariables.push(path);
 
     let resolved = 0;

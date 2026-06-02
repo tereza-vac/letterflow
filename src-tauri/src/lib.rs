@@ -1,5 +1,6 @@
 mod secure;
 mod smtp;
+mod ai_http;
 
 /// Entry point shared by the desktop binary and (potentially) mobile targets.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -16,6 +17,7 @@ pub fn run() {
             secure::secure_delete,
             smtp::smtp_test,
             smtp::smtp_send,
+            ai_http::ai_http_post,
         ])
         .run(tauri::generate_context!())
         .expect("error while running letterflow");

@@ -32,20 +32,30 @@ diverse contacts, send one safe test email, and export everything.
   relational schema (Drizzle) defined in `src/lib/storage/sql-schema.ts`.
 - **Templates library**: save/reuse templates.
 
-## Future: guarded bulk sending
+## Guarded bulk sending
 
-Not in the MVP. When added, it must include:
+A first, opt-in version ships behind **Settings → Developer options** (off by
+default). It already includes:
 
-- dry-run mode by default and manual confirmation,
-- recipient limit, batch size, delay between emails and batches, daily limit,
-- pause/resume, send logs,
-- skip unsubscribed / invalid / already-sent contacts,
-- block sending when the risk score is high,
-- require a completed test send first.
+- ✅ dry-run mode by default and manual confirmation (type `SEND`),
+- ✅ delay between emails (throttle),
+- ✅ skip unsubscribed / invalid / suppressed / already-sent contacts,
+- ✅ block sending when there are critical issues / no successful test send,
+- ✅ require a completed test send first,
+- ✅ per-recipient send log persisted across runs,
+- ✅ stop mid-run.
 
-## Future: unsubscribe handling
+Still to do:
 
-- Local unsubscribe/suppression list and suppression-list import.
-- Never send to contacts marked unsubscribed.
+- batch size, delay between batches, and a daily limit,
+- pause/resume (currently stop-only),
+- a hard configurable recipient cap.
+
+## Unsubscribe / suppression
+
+- ✅ Local suppression list with paste/import; bulk send never contacts
+  suppressed, unsubscribed or invalid contacts.
+- Still to do: mark-as-unsubscribed actions from the contacts table, and
+  importing a suppression file directly.
 - Do not fake one-click unsubscribe; recommend a professional platform or a
   provider with proper unsubscribe handling for production campaigns.
