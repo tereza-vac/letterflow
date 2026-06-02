@@ -3,26 +3,6 @@
 All notable changes to letterflow are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
-
-### Added
-
-- **Guarded bulk send** (opt-in, off by default behind **Settings → Developer
-  options**). Dry-run-first, with a typed `SEND` confirmation, a configurable
-  per-email delay, live progress, a stop control, and a per-recipient log that
-  persists across runs. It requires a successful test send and a clear safety
-  score, and automatically skips suppressed, unsubscribed, invalid and
-  already-sent contacts.
-- **Suppression list** — paste/add emails that must never be contacted; bulk
-  send always skips them. Persisted with the rest of the local state.
-
-### Changed
-
-- Test send screen no longer says bulk sending is impossible; it links to the
-  advanced bulk-send step when the developer toggle is on.
-- README, roadmap and user guide updated to document bulk send and the
-  suppression list. Added Settings, Campaign brief and Edit email screenshots.
-
 ## [0.1.0] — 2026-06-02
 
 First public MVP: a local, safety-first desktop app (Windows) for preparing
@@ -50,6 +30,14 @@ email campaigns from messy files and a rough brief.
 - **Campaign safety score** (0–100) with blocking checks and concrete fixes.
 - **Guarded test send** through your own SMTP, with a confirmation dialog and a
   send log.
+- **Guarded bulk send** (opt-in, off by default behind **Settings → Developer
+  options**): dry-run-first, with a typed `SEND` confirmation, a configurable
+  per-email delay, live progress, a stop control, and a per-recipient log that
+  persists across runs. Requires a successful test send and a clear safety
+  score, and automatically skips suppressed, unsubscribed, invalid and
+  already-sent contacts.
+- **Suppression list** — paste/add emails that must never be contacted; bulk
+  send always skips them.
 - **Export** cleaned/invalid/review contacts (CSV/XLSX), email bodies, an import
   report, and a full JSON campaign archive.
 - **OpenAI-compatible AI providers** — works with OpenAI and Google Gemini's
@@ -67,7 +55,9 @@ email campaigns from messy files and a rough brief.
 - AI requests use a native HTTP path with a 120s timeout in the desktop app. For
   Gemini, JSON-mode (`response_format`) is omitted for compatibility; the JSON
   shape is enforced via the prompt.
-- No bulk/production sending, scheduling, analytics, real unsubscribe hosting,
-  or suppression lists in this release.
+- Bulk sending is opt-in and intentionally limited (small volumes, your own
+  SMTP); it is not a deliverability solution and stays off by default.
+- No scheduling, A/B testing, analytics, or real one-click unsubscribe hosting
+  in this release.
 
 [0.1.0]: https://github.com/tereza-vac/letterflow/releases/tag/v0.1.0
