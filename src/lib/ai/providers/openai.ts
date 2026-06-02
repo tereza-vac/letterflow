@@ -5,6 +5,7 @@ import {
   type GenerateOptions,
 } from "@/lib/ai/types";
 import { SYSTEM_PROMPT, buildUserPrompt } from "@/lib/ai/prompt";
+import { providerFetch } from "@/lib/ai/http";
 
 /** Strip accidental ```json fences so JSON.parse won't choke. */
 function extractJson(text: string): string {
@@ -28,7 +29,7 @@ async function chat(
   signal?: AbortSignal,
 ): Promise<string> {
   const url = `${config.baseUrl.replace(/\/$/, "")}/chat/completions`;
-  const res = await fetch(url, {
+  const res = await providerFetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

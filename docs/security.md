@@ -51,9 +51,13 @@ The full contact list is **never** sent.
 
 - The app requires internet only for AI generation and test sending. An offline
   banner is shown and those actions are disabled when offline.
-- The webview Content-Security-Policy restricts `connect-src` to the app itself
-  and the configured AI endpoint (`tauri.conf.json` → `app.security.csp`). If
-  you point the AI base URL at a different host, update the CSP accordingly.
+- Outbound AI requests are made from the Rust side via the Tauri HTTP plugin
+  (`src/lib/ai/http.ts`), which bypasses webview CORS and lets you use any
+  OpenAI-compatible provider (OpenAI, Gemini's OpenAI-compatible endpoint,
+  Azure, a local server, …) without per-host webview allowlisting. The HTTP
+  plugin scope is restricted to `https://*` in `capabilities/default.json`.
+- The webview Content-Security-Policy (`tauri.conf.json` → `app.security.csp`)
+  allows `connect-src https:` plus the Tauri IPC channel.
 
 ## Sending
 
