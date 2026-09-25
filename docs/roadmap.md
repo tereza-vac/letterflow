@@ -8,16 +8,16 @@ diverse contacts, send one safe test email, and export everything.
 
 ### Milestones
 
-- **M1 — Shell & setup** ✅ Tauri + React scaffold, UI shell, Settings, internet
+- **M1 — Shell & setup**: Tauri + React scaffold, UI shell, Settings, internet
   check, file upload UI.
-- **M2 — Import** ✅ CSV/XLSX parsing, column detection, mapping, email
+- **M2 — Import**: CSV/XLSX parsing, column detection, mapping, email
   validation, dedupe, import report.
-- **M3 — Drafting** ✅ Campaign brief, AI generation, email editor, template
+- **M3 — Drafting**: Campaign brief, AI generation, email editor, template
   variables.
-- **M4 — Preview & safety** ✅ Preview, missing-variable analysis, smart preview
+- **M4 — Preview & safety**: Preview, missing-variable analysis, smart preview
   sampling, risk score.
-- **M5 — Send & export** ✅ SMTP test send, test-send logs, export package.
-- **M6 — Packaging & docs** ✅ Windows `.exe` packaging verified (standalone
+- **M5 — Send & export**: SMTP test send, test-send logs, export package.
+- **M6 — Packaging & docs**: Windows `.exe` packaging verified (standalone
   `letterflow.exe`, NSIS setup, and MSI installer produced via `tauri build`),
   documentation, security review.
 
@@ -37,13 +37,13 @@ diverse contacts, send one safe test email, and export everything.
 A first, opt-in version ships behind **Settings → Developer options** (off by
 default). It already includes:
 
-- ✅ dry-run mode by default and manual confirmation (type `SEND`),
-- ✅ delay between emails (throttle),
-- ✅ skip unsubscribed / invalid / suppressed / already-sent contacts,
-- ✅ block sending when there are critical issues / no successful test send,
-- ✅ require a completed test send first,
-- ✅ per-recipient send log persisted across runs,
-- ✅ stop mid-run.
+- dry-run mode by default and manual confirmation (type `SEND`),
+- delay between emails (throttle),
+- skip unsubscribed / invalid / suppressed / already-sent contacts,
+- block sending when there are critical issues / no successful test send,
+- require a completed test send first,
+- per-recipient send log persisted across runs,
+- stop mid-run.
 
 Still to do:
 
@@ -53,7 +53,7 @@ Still to do:
 
 ## Unsubscribe / suppression
 
-- ✅ Local suppression list with paste/import; bulk send never contacts
+- Local suppression list with paste/import; bulk send never contacts
   suppressed, unsubscribed or invalid contacts.
 - Still to do: mark-as-unsubscribed actions from the contacts table, and
   importing a suppression file directly.

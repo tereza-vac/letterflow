@@ -75,53 +75,53 @@ A full walkthrough lives in [`docs/user-guide.md`](docs/user-guide.md).
 
 ## Features
 
-- 📂 **Import** `.xlsx`, `.csv`, `.md`, `.txt` and auto-detect contact sources
+- **Import** `.xlsx`, `.csv`, `.md`, `.txt` and auto-detect contact sources
   vs. campaign context.
-- 🧭 **Map columns** to contact fields with confidence scores and plain-language
+- **Map columns** to contact fields with confidence scores and plain-language
   explanations (recognizes English **and** Czech column names, plus custom
   fields like dog names).
-- 🧹 **Clean contacts**: normalize and validate emails, deduplicate by email,
+- **Clean contacts**: normalize and validate emails, deduplicate by email,
   carefully merge custom fields, and flag near-duplicate names for review —
   *without ever silently deleting data*.
-- 📊 **Data quality report**: missing values, invalid email rate, duplicate
+- **Data quality report**: missing values, invalid email rate, duplicate
   rate, suspicious rows, long values, diacritics/special characters.
-- 🌐 **Read facts from the web**: paste a link (or include a URL in your brief)
+- **Read facts from the web**: paste a link (or include a URL in your brief)
   and letterflow fetches the page, extracts structured data (`schema.org`
   JSON-LD) and metadata, and feeds verified facts (date, venue, …) to the AI so
   it doesn't have to guess.
-- ✍️ **AI drafting** from a rough brief: 3 subject options, plain-text + HTML
+- **AI drafting** from a rough brief: 3 subject options, plain-text + HTML
   bodies, a footer with unsubscribe wording, and missing-information warnings.
   Structured JSON output, rendered part-by-part.
-- 🪄 **Edit with AI**: regenerate the whole draft from short instructions, or
+- **Edit with AI**: regenerate the whole draft from short instructions, or
   select a passage and rewrite only that part — manual edits are always
   preserved.
-- 🔠 **Template variables** (`{{ firstName }}`, `{{ custom.dogName }}`,
+- **Template variables** (`{{ firstName }}`, `{{ custom.dogName }}`,
   `{{ unsubscribe_url }}`, with `| default: "there"` fallbacks) and
   missing-variable analysis.
-- 👀 **Smart preview** across diverse real contacts (not just the first row),
+- **Smart preview** across diverse real contacts (not just the first row),
   with unresolved variables and fallbacks highlighted.
-- 🛡️ **Campaign safety score** with blocking checks (missing subject/sender/
+- **Campaign safety score** with blocking checks (missing subject/sender/
   unsubscribe, unresolved variables, no SMTP, …).
-- 📨 **One guarded test send** through your own SMTP, with a confirmation dialog
+- **One guarded test send** through your own SMTP, with a confirmation dialog
   and a full send log.
-- 🚦 **Opt-in guarded bulk send** (off by default): a dry-run-first sender that
+- **Opt-in guarded bulk send** (off by default): a dry-run-first sender that
   throttles delivery, skips suppressed/unsubscribed/invalid and already-sent
   contacts, requires a successful test send and a clear safety score, and keeps
   a per-recipient log.
-- 🧯 **Suppression list**: paste or import emails that must never be contacted;
+- **Suppression list**: paste or import emails that must never be contacted;
   bulk send always skips them.
-- 📤 **Export** cleaned/invalid/review contacts (CSV/XLSX), plain-text + HTML
+- **Export** cleaned/invalid/review contacts (CSV/XLSX), plain-text + HTML
   bodies, an import report, and a full JSON campaign archive.
 
 ### What it does **not** do yet
 
-- ⚠️ Bulk sending is **opt-in and intentionally limited** — it is meant for small
+- Bulk sending is **opt-in and intentionally limited** — it is meant for small
   volumes from your own SMTP and is **not** a deliverability solution. It stays
   off until you enable it in **Settings → Developer options**.
-- ❌ No real one-click unsubscribe page / hosting. The draft includes
+- No real one-click unsubscribe page / hosting. The draft includes
   unsubscribe wording and an `{{ unsubscribe_url }}` placeholder; real
   unsubscribe handling belongs to a dedicated sending platform.
-- ❌ No scheduling, A/B testing, analytics, or telemetry.
+- No scheduling, A/B testing, analytics, or telemetry.
 
 ---
 
@@ -277,7 +277,7 @@ See [`docs/security.md`](docs/security.md) for the full security model.
   delay, and always skips suppressed/unsubscribed/invalid and already-sent
   contacts. It is intended for small volumes only.
 
-> ⚠️ For real campaigns, export your cleaned contacts and content and send
+> For real campaigns, export your cleaned contacts and content and send
 > through a dedicated email platform with proper deliverability and unsubscribe
 > handling (Ecomail, Mailchimp, MailerLite, Brevo, Amazon SES, …).
 
