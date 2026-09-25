@@ -1,9 +1,6 @@
 import { AlertTriangle } from "lucide-react";
 
-/**
- * High-contrast checklist of facts the AI flagged as missing. Replaces the old
- * low-contrast amber alert, which was hard to read on the dark theme.
- */
+/** Checklist of facts the AI flagged as missing from the brief. */
 export function MissingInfo({ items }: { items: string[] }) {
   if (!items || items.length === 0) return null;
   return (
